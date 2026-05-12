@@ -308,3 +308,50 @@ print(f"First: {first}, Rest: {rest}")
 # First: 10, Rest: [20, 30, 40, 50]
 
 
+################################
+### Control flows
+################################
+# Ternary operator
+score = 85
+status = "Pass" if score > 50 else "Fail"
+print(status)
+# Pass
+
+# Enumerate and zip
+users = ["Alex", "Dane", "Jane"]
+roles = ["Admin", "User", "Guest"]
+
+for i, user in enumerate(users):
+    print(f"User {i + 1}: {user}")
+# User 1: Alex
+# User 2: Dane
+# User 3: Jane
+
+for user, role in zip(users, roles):
+    print(f"{user} is a {role}")
+# Alex is a Admin
+# Dane is a User
+# Jane is a Guest
+
+# Match (3.10+) - pattern matching - to parse LLM tool call outputs
+events = [
+    {"type": "message", "content": "Hello there!"},
+    {"type": "tool_call", "function": "get_weather", "location": "Paris"},
+    {"type": "error", "code": 500},
+    {"type": "unknown", "data": "???"}
+]
+
+for event in events:
+    match event:
+        case {"type": "message", "content": content}: # Capture the content
+            print(f"User said: {content}")
+        case {"type": "tool_call", "function": func_name, "location": loc}:
+            print(f"System calling {func_name}() for {loc}")
+        case {"type": "error", "code": code} if code >= 500: # guard clause
+            print(f"CRITICAL Server Error: {code}")
+        case _: # Default case
+            print(f"Ignored unhandled event: {event}")
+# User said: Hello there!
+# System calling get_weather() for Paris
+# CRITICAL Server Error: 500
+# Ignored unhandled event: {'type': 'unknown', 'data': '???'}

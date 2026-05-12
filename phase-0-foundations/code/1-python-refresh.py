@@ -226,6 +226,15 @@ defaults = {"theme": "light", "role": "guest"}
 merged_user = defaults | user  # 3.9+, right hand wins
 print(f"Merged user: {merged_user}")
 # Merged user: {'theme': 'light', 'role': 'dev', 'id': 1, 'username': 'alex_ai', 'last_login': '2026-05-11', 'city': 'Colombo'}
+merged_user = {**defaults, **user} # Dictionary merge
+print(f"Merged user: {merged_user}")
+# Merged user: {'theme': 'light', 'role': 'dev', 'id': 1, 'username': 'alex_ai', 'last_login': '2026-05-11', 'city': 'Colombo'}
+list_1 = [1, 2, 3]
+list_2 = [4, 5, 6]
+combined_list = [*list_1, *list_2] # List merge
+print(combined_list)
+# [1, 2, 3, 4, 5, 6]
+
 
 # Iteration
 for key, value in merged_user.items():
@@ -264,7 +273,7 @@ raw_tags = ["python", "python", "javascript", "javascript", "java"]
 unique_tags = set(raw_tags)
 print(f"Unique tags: {unique_tags}")
 # Unique tags: {'javascript', 'java', 'python'}
-unique_tags_same_order = list(dict.fromkeys(raw_tags)) # 3.7+ dicts preserve order
+unique_tags_same_order = list(dict.fromkeys(raw_tags))  # 3.7+ dicts preserve order
 print(f"Unique tags (same order): {unique_tags_same_order}")
 # Unique tags (same order): ['python', 'javascript', 'java']
 
@@ -276,13 +285,13 @@ print(f"Is 'python' in tags? {'python' in unique_tags}")
 backend_skills = {"python", "django", "sql"}
 cloud_skills = {"aws", "docker", "python"}
 
-print(f"All skills: {backend_skills | cloud_skills}") # | union
+print(f"All skills: {backend_skills | cloud_skills}")  # | union
 # All skills: {'aws', 'docker', 'sql', 'python', 'django'}
-print(f"Common skills: {backend_skills & cloud_skills}") # & intersection
+print(f"Common skills: {backend_skills & cloud_skills}")  # & intersection
 # Common skills: {'python'}
-print(f"Skills to learn: {backend_skills - cloud_skills}") # - difference
+print(f"Skills to learn: {backend_skills - cloud_skills}")  # - difference
 # Skills to learn: {'sql', 'django'}
-print(f"New skills: {backend_skills ^ cloud_skills}") # ^ symmetric difference
+print(f"New skills: {backend_skills ^ cloud_skills}")  # ^ symmetric difference
 # New skills: {'aws', 'docker', 'sql', 'django'}
 
 
@@ -297,19 +306,21 @@ Purpose:
 - Unpacking - clean variable assignments.
 '''
 
+
 def get_location() -> tuple[float, float]:
-    return 6.93, 79.86 # Returns a tuple of floats
+    return 6.93, 79.86  # Returns a tuple of floats
+
 
 lat, lon = get_location()
 print(f"Latitude: {lat}, Longitude: {lon}")
 # Latitude: 6.93, Longitude: 79.86
-first, *rest = [10, 20, 30, 40, 50] # Star unpacking
+first, *rest = [10, 20, 30, 40, 50]  # Star unpacking
 print(f"First: {first}, Rest: {rest}")
 # First: 10, Rest: [20, 30, 40, 50]
 
 
 ################################
-### Control flows
+### Control flows *
 ################################
 # Ternary operator
 score = 85
@@ -333,7 +344,7 @@ for user, role in zip(users, roles):
 # Dane is a User
 # Jane is a Guest
 
-# Match (3.10+) - pattern matching - to parse LLM tool call outputs
+# Match-case (3.10+) - pattern matching - to parse LLM tool call outputs
 events = [
     {"type": "message", "content": "Hello there!"},
     {"type": "tool_call", "function": "get_weather", "location": "Paris"},
@@ -343,15 +354,76 @@ events = [
 
 for event in events:
     match event:
-        case {"type": "message", "content": content}: # Capture the content
+        case {"type": "message", "content": content}:  # Capture the content
             print(f"User said: {content}")
         case {"type": "tool_call", "function": func_name, "location": loc}:
             print(f"System calling {func_name}() for {loc}")
-        case {"type": "error", "code": code} if code >= 500: # guard clause
+        case {"type": "error", "code": code} if code >= 500:  # guard clause
             print(f"CRITICAL Server Error: {code}")
-        case _: # Default case
+        case _:  # Default case
             print(f"Ignored unhandled event: {event}")
 # User said: Hello there!
 # System calling get_weather() for Paris
 # CRITICAL Server Error: 500
 # Ignored unhandled event: {'type': 'unknown', 'data': '???'}
+
+'''
+Compared to if/else:
+- Matches the first pattern and extracts variables in 1 statement
+'''
+
+
+################################
+### Functions *
+################################
+'''Catch-alls - wrappers, decorators, API clients, etc.
+*args and **kwargs (args and kwargs naming conventions, only * and ** are reserved)
+*args: arguments into a tuple
+**kwargs: keyword arguments into a dictionary'''
+def flexible_logger(level, *args, **kwargs):
+    print(f"[{level.upper()}]")
+    print(f"   Positional args: {args} (Type: {type(args).__name__})")
+    print(f"   Keyword args: {kwargs} (Type: {type(kwargs).__name__})")
+
+
+flexible_logger("info", "User logged in", "IP: 127.0.0.1", user_id=34, status="success")
+# [INFO]
+#    Positional args: ('User logged in', 'IP: 127.0.0.1') (Type: tuple)
+#    Keyword args: {'user_id': 34, 'status': 'success'} (Type: dict)
+
+# Mutable default
+def bad_add(item, bucket=[]):
+    bucket.append(item)
+    return bucket
+
+
+print(bad_add('apple'))
+# ['apple']
+print(bad_add('banana')) # DEFAULT ARGUMENTS ARE CREATED ONCE AT FUNCTION DEFINITION TIME
+# ['apple', 'banana']
+
+# FOR SAFETY: USE NONE
+def safe_add(item, bucket=None):
+    if bucket is None:
+        bucket = []
+    bucket.append(item)
+    return bucket
+
+
+print(safe_add('apple'))
+# ['apple']
+print(safe_add('banana'))
+# ['banana']
+
+# Lambda functions
+double = lambda x: x * 2
+print(double(5))
+# 10
+users = [
+    {'name': 'Alice', 'age': 30},
+    {'name': 'Bob', 'age': 25},
+    {'name': 'Charlie', 'age': 35}
+]
+sorted_users = sorted(users, key=lambda user: user['age'])
+print(sorted_users)
+# [{'name': 'Bob', 'age': 25}, {'name': 'Alice', 'age': 30}, {'name': 'Charlie', 'age': 35}]

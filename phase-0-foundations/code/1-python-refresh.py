@@ -772,3 +772,70 @@ print(f"List Size: {sys.getsizeof(large_list):,} bytes")
 # List Size: 8,448,728 bytes
 print(f"Generator Size: {sys.getsizeof(large_generator):,} bytes")
 # Generator Size: 200 bytes
+
+
+################################
+### Context Managers *
+################################
+'''
+When accessing resources that require cleanup,
+ context managers ensure automatic cleanup even if an error occurs.
+E.g., opening files, database connections, HTTP sessions, etc.
+
+It avoids resource locks and memory leaks.
+
+Purpose:
+In LangChain and FastAPI,
+- Making LLM calls (httpx.AsyncClient)
+- Database sessions
+- File handling for reading/writing files
+'''
+from pathlib import Path # Modern way of handling files
+
+file_path = Path("test_data.txt")
+with file_path.open("w") as f: # When block ends, it closes automatically
+    f.write("Hello world!")
+    print("File written successfully.")
+# File written successfully.
+
+file_path.unlink() # Delete the file after usage
+
+# Custom context manager
+from contextlib import contextmanager
+
+@contextmanager
+def db_transaction():
+    print("[DB] Setup: Opening database connection...")
+    print("[DB] Setup: Beginning transaction...")
+
+    try:
+        yield # Yields control to the `with` block
+        print("[DB] Cleanup: Committing transaction...") # If no errors
+    except Exception as e: # If any errors inside the `with` block
+        print(f"[DB] Cleanup: Rolling back transaction due to: {e}")
+    finally: # Always runs
+        print("[DB] Cleanup: Closing database connection...")
+
+with db_transaction(): # success
+    print("Inside the transaction.")
+    print("Doing some work...")
+# [DB] Setup: Opening database connection...
+# [DB] Setup: Beginning transaction...
+# Inside the transaction.
+# Doing some work...
+# [DB] Cleanup: Committing transaction...
+# [DB] Cleanup: Closing database connection...
+
+try: # failure
+    with db_transaction():
+        print("Inside the transaction.")
+        print("Doing some work...")
+        raise Exception("Simulated crash")
+except ValueError:
+    print("Handling ValueError outside the transaction.")
+# [DB] Setup: Opening database connection...
+# [DB] Setup: Beginning transaction...
+# Inside the transaction.
+# Doing some work...
+# [DB] Cleanup: Rolling back transaction due to: Simulated crash
+# [DB] Cleanup: Closing database connection...

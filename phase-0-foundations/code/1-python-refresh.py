@@ -624,6 +624,102 @@ except Exception as e:
     print(f"Error: {type(e).__name__} - {e}")
 # Cannot modify frozen dataclass: cannot assign to field 'x'
 
+
 ################################
 ### Decorators *
 ################################
+'''
+A function that wraps another function to change its behavior.
+Will not modify the original function's code.
+
+Purpose:
+- To avoid code duplication of the same functionality.
+    e.g., measuring execution time of functions, logging, etc.
+- Used by FastAPI (@app.get, @app.post, etc.) and LangChain (@tool).
+    
+@wraps(original_func) - Preserves the original function's name, docstring, etc during the wrapping.
+
+Decorators can be chained. E.g., @repeat @timed.
+IMPORTANT: Chaining order matters - Bottom -> up. And changes the behavior.
+'''
+import time
+from functools import wraps
+
+def timed(func):
+    @wraps(func) # Preserves the original function's name and docstring.
+    def wrapper(*args, **kwargs):
+        print(f"Starting {func.__name__}...")
+        start_time = time.perf_counter()
+
+        # Execute the original function
+        result = func(*args, **kwargs)
+
+        end_time = time.perf_counter()
+        print(f"Finished {func.__name__} in {end_time - start_time:.4f} seconds")
+        return result
+
+    return wrapper
+
+@timed
+def slow_greeting(name: str) -> str:
+    """Returns a greeting after a delay."""
+    time.sleep(2)
+    return f"Hello, {name}!"
+
+print(slow_greeting("Alex"))
+# Starting slow_greeting...
+# Finished slow_greeting in 2.0053 seconds
+# Hello, Alex!
+print(f"Function_name: {slow_greeting.__name__}, \nDocstring: {slow_greeting.__doc__}")
+# Function_name: slow_greeting,
+# Docstring: Returns a greeting after a delay.
+
+# Parameterized decorators
+def repeat(times: int): # gets the `times` parameter from the decorator
+    def decorator(func): # gets the target function
+        @wraps(func)
+        def wrapper(*args, **kwargs): # executes the target function
+            return [func(*args, **kwargs) for _ in range(times)]
+        return wrapper
+    return decorator
+
+@repeat(3)
+def slow_greeting(name: str) -> str:
+    """Returns a greeting after a delay."""
+    time.sleep(1)
+    return f"Hello, {name}!"
+
+print(slow_greeting("Alex"))
+# ['Hello, Alex!', 'Hello, Alex!', 'Hello, Alex!']
+
+# Decorator chaining
+@repeat(3)
+@timed
+def slow_greeting(name: str) -> str:
+    """Returns a greeting after a delay."""
+    time.sleep(1)
+    return f"Hello, {name}!"
+
+print(slow_greeting("Alex"))
+# Starting slow_greeting...
+# Finished slow_greeting in 1.0023 seconds
+# Starting slow_greeting...
+# Finished slow_greeting in 1.0051 seconds
+# Starting slow_greeting...
+# Finished slow_greeting in 1.0001 seconds
+# ['Hello, Alex!', 'Hello, Alex!', 'Hello, Alex!']
+
+# Change chaining order
+@timed
+@repeat(3)
+def slow_greeting(name: str) -> str:
+    """Returns a greeting after a delay."""
+    time.sleep(1)
+    return f"Hello, {name}!"
+
+print(slow_greeting("Alex"))
+# Starting slow_greeting...
+# Finished slow_greeting in 3.0091 seconds
+# ['Hello, Alex!', 'Hello, Alex!', 'Hello, Alex!']
+
+

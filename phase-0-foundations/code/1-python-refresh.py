@@ -1,4 +1,5 @@
 ### PYTHON VERSION
+import dataclasses
 import sys
 
 print(sys.version)
@@ -517,3 +518,50 @@ print(apply_math_operations([1, 2, 3, 4], double))
 print(apply_math_operations([1, 2, 3, 4], lambda x: x ** 2)) # Lambda functions can be used as Callable
 # [1, 4, 9, 16]
 
+################################
+### Data classes *
+################################
+'''
+From Python 3.7. Removes the boilerplate code i.e., __init__ (self), __repr__, etc. for simple data objects.
+Just define the class attributes and type hints.
+
+- Exact mental model for Pydantic (BaseModel): data validation in FastAPI and LangChain.
+- Makes it easier to understand Pydantic.
+
+Two rules:
+- Mutable default safety: forces to use `field(default_factory=...)` and will not allow `tags: list = []`.
+    - Factory issues a new list every time the class is instantiated.
+- Frozen dataclasses: immutable by default by adding `@dataclass(frozen=True)`. Act like a tuple.
+    - Prevents accidental mutation.
+    - Can be used as a key in a dictionary or put in a set (hashable).
+'''
+from dataclasses import dataclass, field
+
+@dataclass
+class User:
+    name: str
+    age: int
+    tags: list[str] = field(default_factory=list) # Factory function to create a new list every time
+
+u1 = User(name="Alex", age=28)
+u1.tags.append("developer")
+print(u1) # Prints with a clean representation
+# User(name='Alex', age=28, tags=['developer'])
+
+# Frozen dataclasses
+@dataclass(frozen=True)
+class Point:
+    x: float
+    y: float
+
+p1 = Point(x=14.2, y=43.0)
+print(p1)
+# Point(x=14.2, y=43.0)
+
+try:
+    p1.x = 10.0
+except AttributeError as e: # dataclasses.FrozenInstanceError inherits from AttributeError
+    print(f"Cannot modify frozen dataclass: {e}")
+except Exception as e:
+    print(f"Error: {type(e).__name__} - {e}")
+# Cannot modify frozen dataclass: cannot assign to field 'x'

@@ -518,6 +518,64 @@ print(apply_math_operations([1, 2, 3, 4], double))
 print(apply_math_operations([1, 2, 3, 4], lambda x: x ** 2)) # Lambda functions can be used as Callable
 # [1, 4, 9, 16]
 
+
+################################
+### Classes (OOP)
+################################
+class User:
+    def __init__(self, name: str, age: int):
+        self.name = name
+        self.age = age
+
+    def greet(self) -> str:
+        return f"Hello, my name is {self.name} and I am {self.age} years old."
+
+    @property # can call like a variable user.is_adult than a function call user.is_adult()
+    def is_adult(self) -> bool:
+        return self.age >= 18
+
+    @staticmethod # Standalone function, doesn't need `self` and logically belongs to the class
+    def create_anonymous() -> "User": # "User" is the return type - forward reference (class hasn't loaded into memory yet)
+        return User("Anonymous", 0)
+
+    @classmethod # Factory methods, alternative constructors (used for creating from JSON dictionary or database row)
+    def from_dict(cls, data: dict) -> "User": # Doesn't need `self` but needs class reference `cls`
+        # `cls` not User(), for subclasses (e.g., Admin) to construct full Admin object, not just User
+        # return cls(data["name"], data["age"])
+
+        # IMPORTANT; To avoid the need of overriding in subclasses due to additional attributes,
+        # can use `**data` to unpack the dictionary. But keys should match the class attributes.
+        return cls(**data)
+
+    def __repr__(self) -> str: # used for debugging and printing
+        return f"User(name={self.name}, age={self.age})"
+
+# Inheritance
+class Admin(User):
+    def __init__(self, name: str, age: int, level: int):
+        super().__init__(name, age) # Call the parent class's constructor
+        self.level = level
+
+    def __repr__(self) -> str:
+        return f"Admin(name={self.name}, age={self.age}, level={self.level})"
+
+alex = Admin("Alex", 28, 10)
+print(alex.greet())
+# Hello, my name is Alex and I am 28 years old.
+print(alex.is_adult)
+# True
+print(alex)
+# Admin(name=Alex, age=28, level=10)
+
+someone = Admin.create_anonymous()
+print(someone)
+# User(name=Anonymous, age=0)
+
+john = Admin.from_dict({"name": "John", "age": 30, "level": 5})
+print(john)
+# Admin(name=John, age=30, level=5)
+
+
 ################################
 ### Data classes *
 ################################
@@ -565,3 +623,7 @@ except AttributeError as e: # dataclasses.FrozenInstanceError inherits from Attr
 except Exception as e:
     print(f"Error: {type(e).__name__} - {e}")
 # Cannot modify frozen dataclass: cannot assign to field 'x'
+
+################################
+### Decorators *
+################################

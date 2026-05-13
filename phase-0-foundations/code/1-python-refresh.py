@@ -723,3 +723,52 @@ print(slow_greeting("Alex"))
 # ['Hello, Alex!', 'Hello, Alex!', 'Hello, Alex!']
 
 
+################################
+### Generators & yield *
+################################
+'''
+Standard functions: all outputs at once.
+Generator functions: outputs one item at a time as being consumed.
+
+Purpose:
+- AI: LLM token streaming - streams tokens as they are generated.
+    Instead of making user wait for the entire response, this provides a typing effect.
+- Memory efficiency: Vector DB - yields vectors one at a time without crashing the memory in server.
+    Zero memory and scalable.
+- Database: pagination - yields rows one at a time.
+'''
+def fib(n: int) -> int:
+    a, b = 0, 1
+    for _ in range(n):
+        yield a
+        a, b = b, a + b
+
+print(list(fib(5))) # Collects all the values into a list
+# [0, 1, 1, 2, 3]
+
+def stream_tokens() -> str:
+    for i, token in enumerate(["Hello", " ", "world", "!"]):
+        print(f"Generating token {i+1}: {token}")
+        yield token
+
+for token in stream_tokens():
+    print(token)
+# Generating token 1: Hello
+# Hello
+# Generating token 2:
+#
+# Generating token 3: world
+# world
+# Generating token 4: !
+# !
+
+# Generator expression or comprehension (Lazy unlike list comprehension)
+import sys
+
+large_list = [x for x in range(1_000_000)] # All loaded into memory
+large_generator = (x for x in range(1_000_000)) # Only the method, not loaded into memory
+
+print(f"List Size: {sys.getsizeof(large_list):,} bytes")
+# List Size: 8,448,728 bytes
+print(f"Generator Size: {sys.getsizeof(large_generator):,} bytes")
+# Generator Size: 200 bytes

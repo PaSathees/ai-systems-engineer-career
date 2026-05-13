@@ -427,3 +427,93 @@ users = [
 sorted_users = sorted(users, key=lambda user: user['age'])
 print(sorted_users)
 # [{'name': 'Bob', 'age': 25}, {'name': 'Alice', 'age': 30}, {'name': 'Charlie', 'age': 35}]
+
+
+################################
+### Type hints **
+################################
+'''
+Type hints are real-code.
+Purpose (FastAPI & Pydantic):
+- FastAPI validates incoming JSON and generates OpenAPI docs
+
+- No need to import from typing module in latest Python versions
+- Can use standard built-ins and pipe operator
+    - Lists and dicts: list[str], dict[str, int]
+    - Optional: str | None (no need for Optional[str])
+    - Union: str | int (no need for Union[str, int])
+'''
+
+def process_payment(amount: int | float, currency: str = "USD") -> str:
+    return f"Processed {amount:.2f} {currency.upper()}"
+
+print(process_payment(100))
+# Processed 100.00 USD
+print(process_payment(100.50, "EUR"))
+# Processed 100.50 EUR
+
+def find_admin(users_list: list[str]) -> dict[str, str] | None:
+    for user_item in users_list:
+        if user_item == "admin":
+            return {"name": "admin", "status": "active"}
+    return None
+
+print(find_admin(["admin", "guest"]))
+# {'name': 'admin', 'status': 'active'}
+print(find_admin(["tester", "guest"]))
+# None
+
+# Type alias (reusable and readable)
+coordinate = tuple[float, float]
+
+def get_distance(p1: coordinate, p2: coordinate) -> float:
+    return 43.3 # After some calculations
+
+print(get_distance((1.2, 3.4), (5.6, 7.8)))
+# 43.3
+
+# GENERICS
+'''
+Any - we lose auto-completion
+[T] - 3.12+, we don't know the exact type yet, but will be the same type once given. E.g.,
+    list[int] -> int & list[str] -> str.
+'''
+from typing import Callable, Iterable
+
+def get_first_item[T](items: list[T]) -> T | None:
+    return items[0] if items else None
+
+names = ["Alice", "Bob", "Charlie"]
+numbers = [1, 2, 3]
+
+first_name = get_first_item(names)
+print(f"First name: {first_name} (Type: {type(first_name).__name__})")
+# First name: Alice (Type: str)
+first_number = get_first_item(numbers)
+print(f"First number: {first_number} (Type: {type(first_number).__name__})")
+# First number: 1 (Type: int)
+
+# Higher-order types (Callable, Iterable)
+'''
+Functions can be passed as arguments and returned as results.
+Callable: function
+    - Callable[[InputType], ReturnType]] - e.g., Callable[[int], str] takes an int and returns a str.
+Iterable: object that can be iterated over. e.g., list, tuple, set, or generator.
+    - Iterable[int] - iterable of ints.
+    
+IMPORTANT:
+- BE GENEROUS ON INPUT TYPES e.g., Iterable or Sequence
+- BE STRICT ON RETURN TYPES e.g., list or tuple
+'''
+def double(x: int) -> int:
+    return x * 2
+
+def apply_math_operations(values: Iterable[int], operation: Callable[[int], int]) -> list[int]:
+    """Applies the given operation to each value in the iterable."""
+    return [operation(v) for v in values]
+
+print(apply_math_operations([1, 2, 3, 4], double))
+# [2, 4, 6, 8]
+print(apply_math_operations([1, 2, 3, 4], lambda x: x ** 2)) # Lambda functions can be used as Callable
+# [1, 4, 9, 16]
+

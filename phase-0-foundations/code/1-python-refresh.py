@@ -1,6 +1,7 @@
 ### PYTHON VERSION
 import dataclasses
 import sys
+from unittest import TestResult
 
 print(sys.version)
 # 3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]
@@ -1011,3 +1012,44 @@ try:
 except RateLimitError as e:
     print(f"Pausing retry after {e.retry_after}s.")
 # Pausing retry after 5s.
+
+
+################################
+### All together - Data classes, Async/Await, Type hints *
+################################
+import asyncio
+from dataclasses import dataclass
+from functools import wraps
+import time
+
+@dataclass
+class Reading:
+    city: str
+    temperature_c: float
+
+def timed_async(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = await func(*args, **kwargs)
+        end_time = time.perf_counter()
+        print(f"{func.__name__} took {(end_time - start_time) * 1000:.0f}ms")
+        return result
+    return wrapper
+
+async def fake_fetch(city: str) -> Reading:
+    await asyncio.sleep(0.5)
+    return Reading(city=city, temperature_c=22.0 + len(city))
+
+@timed_async
+async def fetch_all(cities: list[str]) -> list[Reading]:
+    return  await asyncio.gather(*(fake_fetch(city) for city in cities))
+
+readings = asyncio.run(fetch_all(["Colombo", "Berlin", "Paris", "Madrid"]))
+for reading in readings:
+    print(f"{reading.city}: {reading.temperature_c}\N{DEGREE SIGN}C")
+# fetch_all took 504ms
+# Colombo: 29.0°C
+# Berlin: 28.0°C
+# Paris: 27.0°C
+# Madrid: 28.0°C

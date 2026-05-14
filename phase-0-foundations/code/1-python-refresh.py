@@ -839,3 +839,95 @@ except ValueError:
 # Doing some work...
 # [DB] Cleanup: Rolling back transaction due to: Simulated crash
 # [DB] Cleanup: Closing database connection...
+
+
+################################
+### Async / await ***
+################################
+'''
+Analogy: Restaurant waiter
+Synchronous (normal): Waiter takes order of one table and waits for kitchen to finish.
+ e.g., requests.get(), time.sleep()
+Asynchronous (async): Waiter takes order of one table and after informing to the kitchen,
+waiter can continue with the next table.
+ e.g., httpx.AsyncClient, asyncio.sleep()
+ 
+- `async def` - defines an asynchronous function.
+- `await` - before slow running operations, pause this function and do other things until this is done.
+- `asyncio.gather()` - runs multiple asynchronous operations concurrently.
+
+Purpose in FastAPI + LangChain:
+- Concurrency: waiting on I/O without blocking the event loop.
+
+Careful:
+- Don't use `time.sleep()` in async code. It blocks the event loop.
+- Don't use `requests.get()` in async code too. Can use `httpx.AsyncClient` instead.
+- Calling an async function without `await` will return a coroutine object. Not the result.
+ Need to call `await` on the coroutine object to get the result.
+'''
+import asyncio
+import time
+
+async def fetch_data(task_id: int, delay: int) -> str:
+    print(f"Task {task_id} starting with delay {delay} seconds...")
+    await asyncio.sleep(delay) # hands control back to the event loop until the delay is over
+    # Don't use `time.sleep()` here, it blocks the event loop
+    print(f"Task {task_id} finished")
+    return f"Data for task {task_id}"
+
+async def main():
+    # Sequential execution
+    start = time.perf_counter()
+
+    res1 = await fetch_data(1, 2)
+    res2 = await fetch_data(2, 2)
+
+    end = time.perf_counter()
+    print(f"Sequential execution took {end - start:.2f} seconds")
+
+    # Concurrent execution
+    start = time.perf_counter()
+
+    results = await asyncio.gather(
+        fetch_data(3, 2),
+        fetch_data(4, 2),
+    )
+
+    end = time.perf_counter()
+    print(f"Concurrent execution took {end - start:.2f} seconds")
+    print(f"Results: {results}")
+
+asyncio.run(main())
+# Task 1 starting with delay 2 seconds...
+# Task 1 finished
+# Task 2 starting with delay 2 seconds...
+# Task 2 finished
+# Sequential execution took 4.00 seconds
+# Task 3 starting with delay 2 seconds...
+# Task 4 starting with delay 2 seconds...
+# Task 3 finished
+# Task 4 finished
+# Concurrent execution took 2.00 seconds
+# Results: ['Data for task 3', 'Data for task 4']
+
+# Fetching multiple URLs concurrently using httpx
+import httpx
+
+URLs = [
+    "https://api.open-meteo.com/v1/forecast?latitude=6.93&longitude=79.86&current=temperature_2m",
+    "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m",
+    "https://api.open-meteo.com/v1/forecast?latitude=48.85&longitude=2.35&current=temperature_2m",
+]
+
+async def fetch_temp(urls: list[str]) -> list[float]:
+    async with httpx.AsyncClient() as client:
+        tasks = [client.get(url, timeout=10) for url in urls]
+        responses = await asyncio.gather(*tasks)
+        return [response.json()["current"]["temperature_2m"] for response in responses]
+
+results = asyncio.run(fetch_temp(URLs))
+for city, t in zip(["Colombo", "Berlin", "Paris"], results):
+    print(f"{city}: {t}\N{DEGREE SIGN}C")
+# Colombo: 27.6°C
+# Berlin: 9.0°C
+# Paris: 8.7°C

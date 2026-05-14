@@ -931,3 +931,41 @@ for city, t in zip(["Colombo", "Berlin", "Paris"], results):
 # Colombo: 27.6°C
 # Berlin: 9.0°C
 # Paris: 8.7°C
+
+
+################################
+### File I/O *
+################################
+'''
+`pathlib` is the latest way of handling files and directories in Python.
+Avoid using `os` for file operations.
+
+- `read_text` and `write_text` uses `with` context manager under the hood.
+    Good for operating on small files.
+- For large files, use `open` and `with` context manager to read line by line like a generator.
+    Avoids memory issues.
+'''
+import json
+from pathlib import Path
+
+# Writing to a JSON file
+tmp = Path("/tmp/test.json")
+tmp.write_text(json.dumps({"city": "Colombo", "temperature": 27.6}))
+
+# Reading
+data = json.loads(tmp.read_text())
+print(data)
+# {'city': 'Colombo', 'temperature': 27.6}
+
+# Path operations
+print(tmp.name, tmp.stem, tmp.suffix, tmp.parent)
+# test.json test .json /tmp
+print(tmp.exists(), tmp.is_file(), tmp.is_dir())
+# True True False
+
+# Iterate over a directory for all JSON files
+for p in Path("/tmp").glob("*.json"):
+    print(p)
+# /tmp/test.json
+
+tmp.unlink()

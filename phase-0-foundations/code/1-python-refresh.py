@@ -969,3 +969,45 @@ for p in Path("/tmp").glob("*.json"):
 # /tmp/test.json
 
 tmp.unlink()
+
+
+################################
+### Error handling *
+################################
+'''
+Catch the narrowest possible exception. 
+except Exception: can be used for quick error checks
+except alone: is too broad and can hide bugs. Don't do this.
+'''
+def divide(a: float, b: float) -> float | None:
+    try:
+        result = a / b
+    except ZeroDivisionError as e:
+        print(f"Error: {e}")
+        return None
+    else:
+        print("No error occurred. running else block.")
+        return result
+    finally:
+        print("Always runs (clean up).")
+
+print(divide(10, 2))
+# No error occurred. running else block.
+# Always runs (clean up).
+# 5.0
+print(divide(10, 0))
+# Error: division by zero
+# Always runs (clean up).
+# None
+
+# Custom exceptions
+class RateLimitError(Exception):
+    def __init__(self, retry_after: int):
+        super().__init__(f"retry after {retry_after}s")
+        self.retry_after = retry_after
+
+try:
+    raise RateLimitError(retry_after=5)
+except RateLimitError as e:
+    print(f"Pausing retry after {e.retry_after}s.")
+# Pausing retry after 5s.

@@ -63,7 +63,18 @@ A 1–2 week speed-refresh of Python, TypeScript, Git, SQL, Linux/shell, and DS&
 
 - `notes/` — short write-ups on what clicked or surprised me
 - `code/` — small scripts and skeletons (async fetch, typed fetch helper, slow-query fix)
-- `posts.md` — index of the blog + LinkedIn posts I publish from this phase
+
+---
+
+## Posts
+
+Blog and LinkedIn write-ups published during the foundations refresh. Append as I publish.
+
+Format: `- YYYY-MM-DD — Topic — [blog](url) · [linkedin](url)`
+
+<!-- Example:
+- 2026-05-20 — Async Python in 30 minutes — [blog](https://example.com/async-python) · [linkedin](https://linkedin.com/posts/...)
+-->
 
 ---
 

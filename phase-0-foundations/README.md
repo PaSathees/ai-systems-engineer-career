@@ -7,9 +7,9 @@ A 1–2 week speed-refresh of Python, TypeScript, Git, SQL, Linux/shell, and DS&
 ## Checklist
 
 ### Python
-- [ ] Skim modern Python idioms — comprehensions, walrus, unpacking, dataclasses, type hints
-- [ ] Write a small async script (fetch 3 APIs concurrently with `asyncio.gather`)
-- [ ] Set up a clean project skeleton — `uv` or `poetry` + `ruff` + `mypy --strict`
+- [x] Skim modern Python idioms — comprehensions, walrus, unpacking, dataclasses, type hints
+- [x] Write a small async script (fetch 3 APIs concurrently with `asyncio.gather`)
+- [x] Set up a clean project skeleton — `uv` or `poetry` + `ruff` + `mypy --strict`
 
 ### TypeScript
 - [ ] Generics + utility types — `Partial`, `Pick`, `Omit`, `Record`, `ReturnType`, `Awaited`

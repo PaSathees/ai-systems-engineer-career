@@ -11,7 +11,7 @@ Built and published one phase at a time as I work through it.
 
 A short, deliberate refresh before the advanced AI work begins.
 
-- [ ] Python quick refresh — syntax, idioms, project layout
+- [x] Python quick refresh — syntax, idioms, project layout
 - [ ] TypeScript modern features — generics, utility types, async, narrowing
 - [ ] Git advanced — interactive rebase, cherry-pick, reflog, stash
 - [ ] SQL / PostgreSQL refresh — joins, indexes, transactions, EXPLAIN

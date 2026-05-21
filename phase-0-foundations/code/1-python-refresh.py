@@ -1053,3 +1053,35 @@ for reading in readings:
 # Berlin: 28.0°C
 # Paris: 27.0°C
 # Madrid: 28.0°C
+
+
+################################
+### Walrus operator (Python 3.8+)
+################################
+'''
+It allows to assign a value and use it in the same expression.
+'''
+
+# parsing and filtering API/LLM responses
+raw_data = [{"temp": 22.5}, {"temp": None}, {"temp": 18.0}]
+valid_temps = [t for item in raw_data if (t := item.get("temp")) is not None] # Gets value once
+print(valid_temps)
+# [22.5, 18.0]
+
+# RE pattern matching for validation
+import re
+
+user_input = "bearer_token: abcdfasfdafgn"
+if match := re.search(r"bearer_token: \s*(\w+)", user_input):
+    print(f"Auth successful with token: {match.group(1)}")
+# Auth successful with token: abcdfasfdafgn
+
+# Fetching in batches or chunks
+import random
+
+def fetch_chunk() -> list[str]: # simulates an API yielding results
+    return [random.choice(["task_a", "task_b"])] if random.random() < 0.3 else []
+
+while chunk := fetch_chunk():
+    print(chunk)
+# ['task_a']
